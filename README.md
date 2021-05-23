@@ -10,7 +10,7 @@ Resultado umidade: Acima de 70% -> dois leds ascendem, buzzer apita e no serial 
 Todas as infos devem ir para o app MQTT Dash.
 
 Para a leitura do código -> acesse a pásta Código.
-Para entender a montagem e o funcionamento do código-> Projeto - representações
+Para entender a montagem, funcionamento do código e imagens-> Projeto - representações
 
 O que foi utilizado?
 - Arduino Uno - Base do projeto
@@ -22,4 +22,3 @@ O que foi utilizado?
 - Buzzer- Atuador de efeito sonoro
 - Protoboard - Conexão
 - Resistores - Conexão dos leds
-- 
