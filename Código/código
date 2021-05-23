@@ -1,0 +1,127 @@
+#include <DHT.h>
+#include <DHT11.h>
+#include <PubSubClient.h>
+#define DHTPIN 2 // Pino onde sera conectado a saida de dados do sensor
+ 
+int led = 6;
+int led2 = 3;
+int buzzer = 7;
+int TempMax = 35;
+int HumiMin = 20;
+int HumiMax = 70;
+int humi, temp;
+
+const char* ssid = "wifi";
+const char* password = "password";
+const char* mqtt_server = "198.41.30.241";
+const char* keyDevice = "DHT"; 
+ 
+#define DHTTYPE DHT11 // Define o sensor utilizado
+ 
+DHT dht(DHTPIN, DHTTYPE); //Da um nome para o Sensor
+
+WiFiClient espClient;
+PubSubClient cliente(espClient);
+
+int value=0; 
+void setup()
+{
+Serial.begin(9600); //Inicializa a coneçao serial
+dht.comeco(); //Inicia a comunicaçao com o sensor
+setup_wifi();
+client.setServer(mqtt_server, 1883);
+Serial.println("Bem vindo ao sistema de hidratação"); //Escreve uma mensagem na serial
+Serial.println("Acesso a temperatura e humidade");
+client.setCallBack(callback);
+ 
+pinMode(led, OUTPUT);//Define os pinos led e buzzer como saida
+pinMode(led2, OUTPUT);
+pinMode(buzzer, OUTPUT);
+}
+
+void setup_wifi(){
+delay(10);
+WiFi.comeco(ssid, password);
+
+while (WiFi.status() !=WL_CONNECTED){
+delay(500);}}
+ 
+void loop() {
+ 
+int humidade = dht.le_umidade(); //Define uma variavel para humidade
+int temperatura = dht.ler_Temperatura(); //Define uma variavel para Temperatura
+ 
+// Se ouver falha na leitura
+if (isnan(temperatura) || isnan(humidade))
+{
+Serial.println("Erro na leitura do sensor"); //Envia uma mensagem de erro para a serial
+delay(500); //Espera um tempo
+}
+ 
+else //Se nao ouver erro...
+{
+ 
+Serial.print("Umidade: "); //Escreve a humidade na serial
+Serial.print(humidade);
+Serial.print(" %\t");
+Serial.print("Temperatura: "); //Escreve a temperatura na serial
+Serial.print(temperatura);
+Serial.println(" *C");
+ 
+if(humidade<=HumiMin) //Condiçao: Se a umidade for menor ou igual a 20...
+{
+digitalWrite(led2, HIGH); // Liga o Led Verde
+digitalWrite(buzzer, HIGH); //Dá um "Bip" no buzzer
+Serial.print("Necessidade de hidratação: Baixa ");
+delay(500);
+digitalWrite(buzzer, LOW);
+delay(10000); //Aguarda 10 Segundos
+digitalWrite(led2, LOW);
+client.publish("DHT/temp" String(temp));
+client.publish("DHT/humi" String(humi));
+} // Fecha o loop if
+
+if(humidade>HumiMin || humidade<HumiMax) //Condiçao: Se a umidade for maior que 20 e menor que 70 o sugundo led ascende e o buzzer toca...
+{
+digitalWrite(led, HIGH); // Liga o Led Vermelho
+digitalWrite(buzzer, HIGH); //Dá um "Bip" no buzzer
+Serial.print("Necessidade de hidratação: Média ");
+Serial.print("Beba Àgua!!");
+delay(500);
+digitalWrite(buzzer, LOW);
+delay(10000); //Aguarda 10 Segundos
+digitalWrite(led, LOW);
+client.publish("DHT/temp" String(temp));
+client.publish("DHT/humi" String(humi));
+} // Fecha o loop if
+
+if(humidade>=HumiMax) //Condiçao: Se a umidade for maior ou igual a 70...
+{
+digitalWrite(led, HIGH); // Liga o Led Verde
+digitalWrite(led2, HIGH);// Liga o Led Vermelho
+digitalWrite(buzzer, HIGH); //Dá um "Bip" no buzzer
+Serial.print("Necessidade de hidratação: Alta ");
+Serial.print("Beba Muita Àgua!!");
+delay(500);
+digitalWrite(buzzer, LOW);
+delay(10000); //Aguarda 10 Segundos
+digitalWrite(led, LOW);
+digitalWrite(led2, LOW);
+client.publish("DHT/temp" String(temp));
+client.publish("DHT/humi" String(humi));
+} // Fecha o loop if
+
+
+for(int buz=0; buz<=3; buz++) //Dá 3 "Bips" no buzzer
+{
+digitalWrite(buzzer, HIGH);
+delay(500);
+digitalWrite(buzzer, LOW);
+delay(500);
+}
+ 
+delay(5000); //Aguarda 5 Segundos
+ //Desliga o led
+} // Fecha o loop if
+} // Fecha o loop else
+ // Fecha o loop
